@@ -1,0 +1,28 @@
+#!/usr/bin/expect
+set CONSOLE_IN_USE   42;
+set CONSOLE_TIMEOUT  43;
+
+set server [ lindex $argv 0]
+
+send_user "\n---------------Reset database------------------------------\n";
+set state 0
+set timeout 180
+set tos 0
+set failed_login 0
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null frtest@10.102.20.165
+        expect {
+                eof { send_user "SSH failed"; exit 1 }
+                "*continue connecting (yes/no)?" { send "yes\r"; exp_continue;}
+                "*assword:" {
+                        send "Infoblox123\r";
+                        exp_continue;
+                }
+                "*blox >" {
+                        send "reset database\r";
+                        send "y\r";
+                        send "y\r";
+                        send "exit\r";
+                        exp_continue;
+                }
+             }
+

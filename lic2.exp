@@ -1,0 +1,39 @@
+#!/usr/bin/expect
+
+set CONSOLE_IN_USE   32;
+set CONSOLE_TIMEOUT  33;
+
+set ip [ lindex $argv 0]
+set license_string [ lindex $argv 1]
+
+send_user "ssh as admin\n";
+send_user "IP Address: $ip\n";
+send_user "License String: $license_string\n";
+
+set timeout 60
+set opt 0
+set login 1
+
+spawn ssh -o StrictHostKeyChecking=no admin@$ip
+        expect {
+                eof { send_user "Execution Completed"; }
+
+                "continue connecting (yes/no)?" {
+                        send "yes\r";
+                        exp_continue;
+                }
+                "assword:" {
+                        send "infoblox\r";
+                        exp_continue;
+                }
+                "Infoblox >" {
+                        if { $login == 1 && $opt == 0 } {
+                                send "set license\r";
+			        exp_continue;
+                        } 
+		}
+		"Enter license string:" {
+                        send "$license_string \r";
+		        send "y\r";
+		        }
+	        }
